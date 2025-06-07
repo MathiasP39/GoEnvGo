@@ -1,28 +1,33 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"strings"
+	"github.com/joho/godotenv"
 )
 
-// Token attendu (à définir dans une variable d'environnement)
-var expectedToken = os.Getenv("CONFIG_TOKEN")
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+    	log.Fatal("Error loading .env file")
+  	}
+	var expectedToken = os.Getenv("CONFIG_TOKEN")
 	if expectedToken == "" {
 		log.Fatal("CONFIG_TOKEN is not set")
 	}
-
+	log.Printf("Using token: %s", expectedToken)
+	fmt.Println("Starting config server...")
 	http.HandleFunc("/config", authMiddleware(configHandler))
 
 	port := ":8080"
 	log.Printf("Config server running on %s", port)
-	log.Fatal(http.ListenAndServe(port, nil)) // pour HTTPS: ListenAndServeTLS
+	log.Fatal(http.ListenAndServe(port, nil))
 }
 
-// Middleware d'authentification
 func authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
@@ -33,7 +38,7 @@ func authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		}
 		token := strings.TrimPrefix(authHeader, "Bearer ")
 
-		if token != expectedToken {
+		if token != getExpectedToken() {
 			log.Println("Forbidden access attempt with token:", token)
 			http.Error(w, "Forbidden", http.StatusForbidden)
 			return
@@ -43,8 +48,15 @@ func authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-// Handler pour envoyer le fichier properties
 func configHandler(w http.ResponseWriter, r *http.Request) {
 	filePath := "config/application.yaml"
 	http.ServeFile(w, r, filePath)
+}
+
+func getExpectedToken() string {
+	expectedToken := os.Getenv("CONFIG_TOKEN")
+	if expectedToken == "" {
+		log.Fatal("CONFIG_TOKEN is not set")
+	}
+	return expectedToken
 }
