@@ -1,0 +1,11 @@
+services:
+  goenvgo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: goenvgo_image:latest
+    container_name: goenvgo
+    ports:
+      - "10080:8080"
+    volumes:
+      - ./config:/app/config
