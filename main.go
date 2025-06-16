@@ -9,11 +9,15 @@ import (
 )
 
 
+
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-    	log.Fatal("Error loading .env file")
-  	}
+	if os.Getenv("CONFIG_TOKEN") == "" {
+		log.Printf("No CONFIG_TOKEN found in environment, loading from .env file");
+		err := godotenv.Load()
+		if err != nil {
+    		log.Fatal("Error loading .env file")
+  		}
+	}
 	var expectedToken = os.Getenv("CONFIG_TOKEN")
 	if expectedToken == "" {
 		log.Fatal("CONFIG_TOKEN is not set")
