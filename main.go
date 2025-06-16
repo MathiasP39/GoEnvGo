@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -20,8 +19,9 @@ func main() {
 		log.Fatal("CONFIG_TOKEN is not set")
 	}
 	log.Printf("Using token: %s", expectedToken)
-	fmt.Println("Starting config server...")
+	log.Println("Starting config server...")
 	http.HandleFunc("/config", authMiddleware(configHandler))
+	http.HandleFunc("/config/{project_name}", authMiddleware(configHandler))
 
 	port := ":8080"
 	log.Printf("Config server running on %s", port)
